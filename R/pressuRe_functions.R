@@ -3749,7 +3749,7 @@ approve_step <- function(df, on_v, off_v, n_steps, side = "none") {
     g <- g + geom_line(data = df1, aes(x = frame, y = force),
                        linewidth = 1.5, color = "red")
     g <- g + xlab("Frame no") + ylab("Force (N)")
-    if (stp == length(on_v)){
+    if (stp == 3){
       g <- g + ggtitle(paste0(side, " ", stp, "Last"))
       }
     else {
