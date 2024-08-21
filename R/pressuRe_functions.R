@@ -753,6 +753,9 @@ pressure_interp <- function(pressure_data, interp_to) {
 
 select_steps <- function (pressure_data, threshold = "auto", min_frames = 10,
                           n_steps = 5, skip = 2) {
+ # testing
+  print("hello")
+  
   # set up global variables
   frame <- NULL
 
