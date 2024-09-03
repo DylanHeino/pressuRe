@@ -1140,8 +1140,8 @@ footprint <- function(pressure_data, variable = "max", frame = NULL,
 #' @importFrom scales manual_pal
 #' @export
 
-plot_pressure <- function(pressure_data, variable = "meanmax", smooth = FALSE, frame,
-                          step_n = "max", plot_COP = FALSE, plot_outline = FALSE,
+plot_pressure <- function(pressure_data, variable = "max", smooth = FALSE, frame,
+                          step_n = "meanmax", plot_COP = FALSE, plot_outline = FALSE,
                           plot_colors = "default", break_values, break_colors,
                           sensor_outline = TRUE, plot = TRUE, legend = TRUE) {
   # set global variables
