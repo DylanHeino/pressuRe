@@ -1141,7 +1141,7 @@ footprint <- function(pressure_data, variable = "max", frame = NULL,
 #' @importFrom scales manual_pal
 #' @export
 
-plot_pressure <- function(pressure_data, variable = "max", smooth = FALSE, frame,
+plot_pressure <- function(pressure_data, variable = "meanmax", smooth = FALSE, frame,
                           step_n = "max", plot_COP = FALSE, plot_outline = FALSE,
                           plot_colors = "default", break_values, break_colors,
                           sensor_outline = TRUE, plot = TRUE, legend = TRUE) {
@@ -3752,12 +3752,9 @@ approve_step <- function(df, on_v, off_v, n_steps, side = "none") {
     g <- g + geom_line(data = df1, aes(x = frame, y = force),
                        linewidth = 1.5, color = "red")
     g <- g + xlab("Frame no") + ylab("Force (N)")
-    if (stp == 3){
-      g <- g + ggtitle(paste0(side, " ", stp, "Last"))
-      }
-    else {
+   
     g <- g + ggtitle(paste0(side, " ", stp))
-      }
+      
     print(g)
     Sys.sleep(1.0)
 
