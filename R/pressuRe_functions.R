@@ -1183,8 +1183,8 @@ footprint <- function(pressure_data, variable = "max", frame = NULL,
 #' @importFrom scales manual_pal
 #' @export
 
-plot_pressure <- function(pressure_data, variable = "max", smooth = FALSE,
-                          frame, step_n = "max", plot_COP = FALSE,
+plot_pressure <- function(pressure_data, variable = "mean", smooth = FALSE,
+                          frame, step_n = "meanmax", plot_COP = FALSE,
                           plot_outline = FALSE, plot_masks = FALSE,
                           plot_colors = "default", break_values, break_colors,
                           sensor_outline = TRUE, plot = TRUE, legend = TRUE) {
@@ -1230,7 +1230,7 @@ plot_pressure <- function(pressure_data, variable = "max", smooth = FALSE,
   if (plot_colors == "default") {
     break_colors <- c("grey","lightblue", "darkblue","green","yellow",
                       "red", "pink")
-    break_values <- c(0, 40, 60, 100, 150, 220, 300)
+    break_values <- c(0, 30, 60, 100, 150, 200, 300)
   }
 
   # legend range
