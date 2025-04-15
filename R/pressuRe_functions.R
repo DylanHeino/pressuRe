@@ -3983,7 +3983,7 @@ automask <- function(pressure_data, mask_scheme, res_scale, foot_side = "auto",
                       l_toe_mask = l_toe_mask,
                       MT1_mask = MT1_mask,
                       MT23_mask = MT23_mask,
-                      MT45_mask = MT45_mask,
+                      MT45_mask = MT45_mask
                       )
   }
   # plot footprint and masks if required
