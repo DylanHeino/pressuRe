@@ -3954,20 +3954,38 @@ automask <- function(pressure_data, mask_scheme, res_scale, foot_side = "auto",
     MT4_mask <- st_difference(ff_mask, MT_45_poly_lat)
     MT4_mask <- st_difference(MT4_mask, MT_34_poly_med)
     MT5_mask <- st_difference(ff_mask, MT_45_poly_med)
+   
+    MT23_mask <- st_difference(ff_mask, MT_12_poly_med)
+    MT23_mask <- st_difference(MT23_mask, MT_34_poly_lat)
+
+    MT45_mask <- st_difference(ff_mask, MT_34_poly_med)
+    MT45_mask <- st_difference(MT45_mask, MT_45_poly_lat)
+
 
     # Make mask list
-    mask_list <- list(heel_mask = hf_mask,
+    # mask_list <- list(heel_mask = hf_mask,
+    #                  midfoot_mask = mf_mask,
+    #                  forefoot_mask = ff_mask,
+    #                  hal_mask = hal_mask,
+    #                  l_toe_mask = l_toe_mask,
+    #                  MT1_mask = MT1_mask,
+    #                  MT2_mask = MT2_mask,
+    #                  MT3_mask = MT3_mask,
+    #                  MT4_mask = MT4_mask,
+    #                  MT5_mask = MT5_mask)
+  #}
+
+    # Make mask list
+      mask_list <- list(heel_mask = hf_mask,
                       midfoot_mask = mf_mask,
                       forefoot_mask = ff_mask,
                       hal_mask = hal_mask,
                       l_toe_mask = l_toe_mask,
                       MT1_mask = MT1_mask,
-                      MT2_mask = MT2_mask,
-                      MT3_mask = MT3_mask,
-                      MT4_mask = MT4_mask,
-                      MT5_mask = MT5_mask)
+                      MT23_mask = MT23_mask,
+                      MT45_mask = MT45_mask,
+                      )
   }
-
   # plot footprint and masks if required
   if (plot == TRUE) {
     # make masks into df format
