@@ -3959,7 +3959,7 @@ automask <- function(pressure_data, mask_scheme, res_scale, foot_side = "auto",
     MT23_mask <- st_difference(MT23_mask, MT_34_poly_lat)
 
     MT45_mask <- st_difference(ff_mask, MT_34_poly_med)
-    MT45_mask <- st_difference(MT45_mask, MT_45_poly_lat)
+    MT45_mask <- st_difference(MT45_mask, MT_45_poly_med)
 
 
     # Make mask list
