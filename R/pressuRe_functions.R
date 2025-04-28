@@ -1435,6 +1435,7 @@ create_mask_manual <- function(pressure_data, mask_definition = "by_vertices", n
 
   # plot existing masks or just footprint
   if (plot_existing_masks == TRUE & n_exist_mask > 0) {
+    grDevices::x11()
     g <- plot_masks(pressure_data)
     for (mask_idx in 1:n_exist_mask){
       mask_coord <- st_coordinates(pressure_data[[5]][[mask_idx]])[, 1:2]
