@@ -1228,9 +1228,9 @@ plot_pressure <- function(pressure_data, variable = "mean", smooth = FALSE,
   }
 
   if (plot_colors == "default") {
-    break_colors <- c("grey","lightblue", "darkblue","green","yellow",
-                      "red", "pink")
-    break_values <- c(0, 30, 60, 100, 150, 200, 300)
+    break_colors <- c("lightblue", 
+                      "red")
+    break_values <- c(450)
   }
 
   # legend range
