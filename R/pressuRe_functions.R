@@ -1419,7 +1419,6 @@ animate_pressure <- function(pressure_data, plot_colors = "default", fps,
 #' @importFrom sf st_polygon
 #' @export
 
-
 create_mask_manual <- function(pressure_data, mask_definition = "by_vertices", n_masks = 1,
                                n_verts = 4, n_sens = 4, threshold = 0.005,
                                plot_existing_masks = TRUE,
@@ -1439,6 +1438,7 @@ create_mask_manual <- function(pressure_data, mask_definition = "by_vertices", n
 
   # plot existing masks or just footprint
   if (plot_existing_masks == TRUE & n_exist_mask > 0) {
+    grDevices::x11()
     g <- plot_masks(pressure_data)
     for (mask_idx in 1:n_exist_mask){
       mask_coord <- st_coordinates(pressure_data[[5]][[mask_idx]])[, 1:2]
@@ -1446,12 +1446,11 @@ create_mask_manual <- function(pressure_data, mask_definition = "by_vertices", n
         mask_coord
     }
   } else {
-    dev.new(noRStudioGD = TRUE)
+    grDevices::x11()
     g <- plot_pressure(pressure_data, plot = FALSE)
     #g <- g + scale_x_continuous(expand = c(0, 0), limits = c(-0.01, 0.15))
     #g <- g + scale_y_continuous(expand = c(0, 0), limits = c(-0.01, 0.30))
     print(g)
-    #readline("Press Enter when the plot has loaded...")
   }
 
   # define mask by vertices
@@ -1461,7 +1460,7 @@ create_mask_manual <- function(pressure_data, mask_definition = "by_vertices", n
 
       # interactively select area
       message("Select mask corners")
-      mask <- gg_locator(n_verts)
+      mask <- gglocator(n_verts)
 
       # if requested, allow closely selected mask vertices to share a vertex
       if (threshold > 0) {
@@ -1505,13 +1504,15 @@ create_mask_manual <- function(pressure_data, mask_definition = "by_vertices", n
 
     # selection of sensors
     message(paste0("Select ", n_sens, " adjacent sensors to define your custom mask"))
-    sensor_pts <- gg_locator(n_sens)
+    sensor_pts <- gglocator(n_sens)
 
     # find which sensors points fall in
+  
     sens_polys <- pressure_data[[7]]
     sens_polys[, 1] <- round(sens_polys[, 1], 8)
     sens_polys[, 2] <- round(sens_polys[, 2], 8)
     sensor_polygons <- sens_df_2_polygon(sens_polys)
+   
     sensor_list <- c()
     for (pts in 1:n_sens) {
       point <- sf::st_point(c(sensor_pts[pts, 1], sensor_pts[pts, 2]))
@@ -1555,7 +1556,6 @@ create_mask_manual <- function(pressure_data, mask_definition = "by_vertices", n
   # return
   return(pressure_data)
 }
-
 
 
 # =============================================================================
