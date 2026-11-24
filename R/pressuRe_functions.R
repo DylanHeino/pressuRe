@@ -1523,12 +1523,14 @@ create_mask_manual <- function(pressure_data, mask_definition = "by_vertices", n
       }
     }
 
-    # build custom mask
+    # Build custom mask
     sensel_polygon <- st_union(st_sfc(sensor_polygons[sensor_list]))
-    #if (length(st_geometry(sensel_polygon)[[1]]) > 1)
-    #  stop("sensels must share a corner or an edge")
-    if ("L3" %in% colnames(st_coordinates(sensel_polygon)))
-      stop("sensels must share a corner or an edge")
+    
+    # Allow sensors to share either an edge OR a corner.
+    # Only reject selections that produce disconnected polygon components.
+    if (length(sf::st_cast(sensel_polygon, "POLYGON")) > 1) {
+      stop("Selected sensors must be connected by an edge or corner.")
+    }
 
     # plot
     if (plot == TRUE) {
