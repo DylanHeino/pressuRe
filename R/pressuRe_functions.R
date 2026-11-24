@@ -1423,20 +1423,12 @@ animate_pressure <- function(pressure_data, plot_colors = "default", fps,
 create_mask_manual <- function(pressure_data, mask_definition = "by_vertices", n_masks = 1,
                                n_verts = 4, n_sens = 4, threshold = 0.005,
                                plot_existing_masks = TRUE,
-                               mask_names = "default",
-                               step_n = "meanmax",
-                               plot_colors = "custom",
-                               break_values = NULL,
-                               break_colors = NULL,
-                               plot = TRUE) {
-
+                               mask_names = "default", plot = TRUE) {
   # global variables
   x <- y <- X <- Y <- sensor_polygon <- polygon_list <- NULL
 
   # check session is interactive
-  if (interactive() == FALSE) {
-    stop("user needs to select mask vertices")
-  }
+  if (interactive() == FALSE) {stop("user needs to select mask vertices")}
 
   # get existing masks (if any)
   mask_list <- pressure_data[[5]]
@@ -1445,95 +1437,43 @@ create_mask_manual <- function(pressure_data, mask_definition = "by_vertices", n
   # empty data frame to store vertex coordinates
   mask_vertices <- data.frame(x = double(), y = double())
 
-  ################################################################################################
-  # PLOT PRESSURE MAP WITH EXISTING MASKS
-  ################################################################################################
-
-  grDevices::x11()
-
-  # Plot pressure map using the specified color thresholds
-  g <- plot_pressure(
-    pressure_data,
-    step_n = step_n,
-    plot_colors = plot_colors,
-    plot_masks = FALSE,
-    break_values = break_values,
-    break_colors = break_colors,
-    plot = FALSE
-  )
-
-  # Overlay existing anatomical masks
-  if (plot_existing_masks == TRUE && n_exist_mask > 0) {
-
-    for (mask_idx in seq_len(n_exist_mask)) {
-
-      mask_coord <- st_coordinates(
-        pressure_data[[5]][[mask_idx]]
-      )[, 1:2]
-
-      # Save existing mask vertices for vertex-based selection
-      mask_vertices[
-        (nrow(mask_vertices) + 1):
-          (nrow(mask_vertices) + nrow(mask_coord)),
-      ] <- mask_coord
-
-      # Add existing mask outline
-      mask_df <- data.frame(
-        x = mask_coord[, 1],
-        y = mask_coord[, 2]
-      )
-
-      g <- g +
-        geom_path(
-          data = mask_df,
-          aes(x = x, y = y),
-          color = "black",
-          linewidth = 0.8
-        )
+  # plot existing masks or just footprint
+  if (plot_existing_masks == TRUE & n_exist_mask > 0) {
+    g <- plot_masks(pressure_data)
+    for (mask_idx in 1:n_exist_mask){
+      mask_coord <- st_coordinates(pressure_data[[5]][[mask_idx]])[, 1:2]
+      mask_vertices[(nrow(mask_vertices) + 1):(nrow(mask_vertices) + nrow(mask_coord)), ] <-
+        mask_coord
     }
+  } else {
+    dev.new(noRStudioGD = TRUE)
+    g <- plot_pressure(pressure_data, plot = FALSE)
+    #g <- g + scale_x_continuous(expand = c(0, 0), limits = c(-0.01, 0.15))
+    #g <- g + scale_y_continuous(expand = c(0, 0), limits = c(-0.01, 0.30))
+    print(g)
+    #readline("Press Enter when the plot has loaded...")
   }
 
-  print(g)
-
-  ################################################################################################
-  # DEFINE MASK BY VERTICES
-  ################################################################################################
-
+  # define mask by vertices
   if (mask_definition == "by_vertices") {
-
-    for (mask_n in 1:n_masks) {
-
-      if (n_verts < 2) {
-        stop("Masks must contain at least 3 vertices")
-      }
+    for (mask_n in 1:n_masks){
+      if (n_verts < 2){stop("Masks must contain at least 3 vertices")}
 
       # interactively select area
       message("Select mask corners")
-      mask <- gglocator(n_verts)
+      mask <- gg_locator(n_verts)
 
       # if requested, allow closely selected mask vertices to share a vertex
       if (threshold > 0) {
-
-        mask_vertices[
-          (nrow(mask_vertices) + 1):
-            (nrow(mask_vertices) + n_verts),
-        ] <- mask
-
-        if (nrow(mask_vertices) > n_verts) {
-
-          v_distance <- as.matrix(dist(mask_vertices))
-
-          for (change_v in 0:(n_verts - 1)) {
-
-            close_v <- which(
-              (v_distance[nrow(mask_vertices) - change_v, ] < threshold) &
-                (v_distance[nrow(mask_vertices) - change_v, ] > 0),
-              arr.ind = TRUE
-            )
-
-            if (length(close_v) > 0) {
-              mask[n_verts - change_v, ] <- mask_vertices[close_v[1], ]
-            }
+        mask_vertices[(nrow(mask_vertices) + 1):
+                        (nrow(mask_vertices) + n_verts), ] <- mask}
+      if (nrow(mask_vertices) > n_verts) {
+        v_distance <- as.matrix(dist(mask_vertices))
+        for (change_v in 0:(n_verts - 1)) {
+          close_v <- which((v_distance[nrow(mask_vertices) - change_v, ] < threshold) &
+                             (v_distance[nrow(mask_vertices) - change_v, ] > 0), arr.ind = TRUE)
+          if (length(close_v) > 0) {
+            mask[n_verts - change_v, ] <- mask_vertices[close_v[1], ]
           }
         }
       }
@@ -1544,21 +1484,8 @@ create_mask_manual <- function(pressure_data, mask_definition = "by_vertices", n
 
       # preview mask
       if (plot == TRUE) {
-
-        g <- g +
-          geom_path(
-            data = mask,
-            aes(x, y),
-            color = "blue",
-            linewidth = 1
-          ) +
-          geom_point(
-            data = mask,
-            aes(x, y),
-            color = "blue",
-            size = 2
-          )
-
+        g <- g + geom_path(data = mask, aes(x, y), color = "blue", linewidth = 1)
+        g <- g + geom_point(data = mask, aes(x, y), color = "blue", size = 2)
         print(g)
       }
 
@@ -1570,92 +1497,43 @@ create_mask_manual <- function(pressure_data, mask_definition = "by_vertices", n
     }
   }
 
-  ################################################################################################
-  # DEFINE MASK BY SELECTING SENSORS
-  ################################################################################################
-
+  # define mask by selecting sensors
   if (mask_definition == "by_sensors") {
-
     # check just one mask
-    if (n_masks != 1) {
+    if (n_masks != 1)
       stop("only one mask can be created when using by_sensors")
-    }
 
     # selection of sensors
-    message(
-      paste0(
-        "Select ",
-        n_sens,
-        " adjacent sensors to define your custom mask"
-      )
-    )
-
-    sensor_pts <- gglocator(n_sens)
+    message(paste0("Select ", n_sens, " adjacent sensors to define your custom mask"))
+    sensor_pts <- gg_locator(n_sens)
 
     # find which sensors points fall in
     sens_polys <- pressure_data[[7]]
-
     sens_polys[, 1] <- round(sens_polys[, 1], 8)
     sens_polys[, 2] <- round(sens_polys[, 2], 8)
-
     sensor_polygons <- sens_df_2_polygon(sens_polys)
-
     sensor_list <- c()
-
     for (pts in 1:n_sens) {
-
-      point <- sf::st_point(
-        c(sensor_pts[pts, 1], sensor_pts[pts, 2])
-      )
-
+      point <- sf::st_point(c(sensor_pts[pts, 1], sensor_pts[pts, 2]))
       for (sens_idx in 1:length(sensor_polygons)) {
-
-        if (
-          length(
-            st_intersects(
-              sensor_polygons[[sens_idx]],
-              point
-            )[[1]]
-          ) == 1
-        ) {
+        if (length(st_intersects(sensor_polygons[[sens_idx]], point)[[1]]) == 1) {
           sensor_list <- c(sensor_list, sens_idx)
         }
       }
     }
 
     # build custom mask
-    sensel_polygon <- st_union(
-      st_sfc(sensor_polygons[sensor_list])
-    )
-
-    # if (length(st_geometry(sensel_polygon)[[1]]) > 1)
-    #   stop("sensels must share a corner or an edge")
-
-    if ("L3" %in% colnames(st_coordinates(sensel_polygon))) {
+    sensel_polygon <- st_union(st_sfc(sensor_polygons[sensor_list]))
+    #if (length(st_geometry(sensel_polygon)[[1]]) > 1)
+    #  stop("sensels must share a corner or an edge")
+    if ("L3" %in% colnames(st_coordinates(sensel_polygon)))
       stop("sensels must share a corner or an edge")
-    }
 
     # plot
     if (plot == TRUE) {
-
-      mask <- data.frame(
-        st_coordinates(sensel_polygon)[, 1:2]
-      )
-
-      g <- g +
-        geom_path(
-          data = mask,
-          aes(X, Y),
-          color = "blue",
-          linewidth = 1
-        ) +
-        geom_point(
-          data = mask,
-          aes(X, Y),
-          color = "blue",
-          size = 2
-        )
-
+      mask <- data.frame(st_coordinates(sensel_polygon)[, 1:2])
+      g <- g + geom_path(data = mask, aes(X, Y), color = "blue", linewidth = 1)
+      g <- g + geom_point(data = mask, aes(X, Y), color = "blue", size = 2)
       print(g)
     }
 
@@ -1664,25 +1542,14 @@ create_mask_manual <- function(pressure_data, mask_definition = "by_vertices", n
     mask_list[[length(mask_list) + 1]] <- sensel_polygon
   }
 
-  ################################################################################################
-  # UPDATE MASK LIST AND ADD LABELS
-  ################################################################################################
-
   # mask list to main data
   pressure_data[[5]] <- mask_list
 
   # add labels
-  if (mask_names[1] == "default" & length(mask_names) == 1) {
-
-    names(pressure_data[[5]])[
-      (n_exist_mask + 1):(n_masks + n_exist_mask)
-    ] <- sprintf("custom_mask%d", seq(1, n_masks))
-
+  if (mask_names[1] == "default" & length(mask_names) == 1){
+    names(pressure_data[[5]])[(n_exist_mask + 1):(n_masks + n_exist_mask)] <- sprintf("custom_mask%d", seq(1, n_masks))
   } else {
-
-    names(pressure_data[[5]])[
-      (n_exist_mask + 1):(n_masks + n_exist_mask)
-    ] <- mask_names
+    names(pressure_data[[5]])[(n_exist_mask + 1):(n_masks + n_exist_mask)] <- mask_names
   }
 
   # return
