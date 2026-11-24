@@ -1277,11 +1277,29 @@ plot_pressure <- function(pressure_data, variable = "mean", smooth = FALSE,
   # add masks
   if (plot_masks == TRUE) {
     masks <- pressure_data[[5]]
-    if (length(masks != 0)) {
-      for (n_mask in 1:length(masks)) {
-        mask_plt_df <- data.frame(st_coordinates(masks[[n_mask]])[,1:2])
-        g <- g + geom_path(data = mask_plt_df, aes(X, Y), color = "red",
-                           linewidth = 1)
+
+    if (length(masks) > 0) {
+      for (n_mask in seq_along(masks)) {
+
+        # Extract mask coordinates
+        mask_plt_df <- as.data.frame(sf::st_coordinates(masks[[n_mask]]))
+
+        # Identify polygon grouping columns
+        group_cols <- grep("^L[0-9]+$", colnames(mask_plt_df), value = TRUE)
+
+        # Keep separate polygon components and rings separate
+        mask_plt_df$mask_group <- do.call(
+          interaction,
+          c(lapply(mask_plt_df[group_cols], factor), list(drop = TRUE))
+        )
+
+        # Plot mask boundaries
+        g <- g + geom_path(
+          data = mask_plt_df,
+          aes(X, Y, group = mask_group),
+          color = "red",
+          linewidth = 1
+        )
       }
     }
   }
