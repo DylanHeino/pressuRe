@@ -1523,20 +1523,27 @@ create_mask_manual <- function(pressure_data, mask_definition = "by_vertices", n
       }
     }
 
-    # Build custom mask
+    # Combine selected sensels into one mask
+    # Corner-touching sensels may produce a MULTIPOLYGON
     sensel_polygon <- st_union(st_sfc(sensor_polygons[sensor_list]))
     
-    # Allow sensors to share either an edge OR a corner.
-    # Only reject selections that produce disconnected polygon components.
-    if (length(sf::st_cast(sensel_polygon, "POLYGON")) > 1) {
-      stop("Selected sensors must be connected by an edge or corner.")
+    # Check that the resulting geometry is valid
+    if (!st_is_valid(sensel_polygon)) {
+      stop("Selected sensels produced an invalid mask geometry")
     }
-
-    # plot
+    
+    # Plot mask
     if (plot == TRUE) {
-      mask <- data.frame(st_coordinates(sensel_polygon)[, 1:2])
-      g <- g + geom_path(data = mask, aes(X, Y), color = "blue", linewidth = 1)
-      g <- g + geom_point(data = mask, aes(X, Y), color = "blue", size = 2)
+      mask_sf <- sf::st_sf(geometry = sensel_polygon)
+    
+      g <- g + geom_sf(
+        data = mask_sf,
+        fill = NA,
+        color = "blue",
+        linewidth = 1,
+        inherit.aes = FALSE
+      )
+    
       print(g)
     }
 
